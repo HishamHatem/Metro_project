@@ -8,8 +8,60 @@ second we will ask the user for start and end stations
 then we will find the shortest path between them
 we will use BFS algorithm to find the shortest path
 we will use a map to represent the metro lines and stations
+
+new features
+shortest path
+all possible pathes
+explain the lines and the count of stations
+expected time 2 min per station if it exceed 60 min show it as hours
+cost of the ticket
+
+spiecial
+clean code:
+fail fast
+defensive blocks
+check inputs
+and performance min conditions and loops and memory
+
+spiecial (not interested in this)
+
+check if the input was wrong use string matrix or regex to check the input
+if the input was wrong show a message to the user and ask him to enter the input again
+
+
+
 */
 import 'dart:io';
+import 'dart:collection';
+
+List<String> bfs(Map<String, List<String>> graph, String start, String end) {
+  Queue<List<String>> queue = Queue<List<String>>();
+  Set visited = <String> {};
+
+  queue.add([start]);
+  visited.add(start);
+
+  while (queue.isNotEmpty) {
+    List<String> path = queue.removeFirst();
+    String current = path.last;
+    
+    if (current == end) {
+      return path;
+    }
+    
+    List<String> neighbors = graph[current] ?? [];
+    for (String neighbor in neighbors) {
+      if (!visited.contains(neighbor)) {
+        visited.add(neighbor);
+        List<String> newPath = List.from(path);
+        newPath.add(neighbor);
+        queue.add(newPath);
+      }
+    }
+  }
+  return []; // Return an empty list if no path is found
+} 
+
 void main(){
 //get inputs
   print('Enter start station:');
@@ -113,5 +165,13 @@ void main(){
   graph.addAll(metro_line_1);
   graph.addAll(metro_line_2);
   graph.addAll(metro_line_3);
+  
+  final result = bfs(graph, startStation, endStation);
+  if (result.isEmpty) {
+    print('No path found between $startStation and $endStation');
+  } else {
+    print('Shortest path from $startStation to $endStation:');
+    print(result.join(' -> '));
+    }
 
 }
