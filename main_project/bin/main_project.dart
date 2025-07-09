@@ -29,37 +29,45 @@ check if the input was wrong use string matrix or regex to check the input
 if the input was wrong show a message to the user and ask him to enter the input again
 
 
-
 */
+
 import 'dart:io';
 import 'dart:collection';
 
-List<String> bfs(Map<String, List<String>> graph, String start, String end) {
+List<List<String>> bfs(Map<String, List<String>> graph, String start, String end) {
   Queue<List<String>> queue = Queue<List<String>>();
-  Set visited = <String> {};
+  List<List<String>> allPaths = [];
 
   queue.add([start]);
-  visited.add(start);
 
-  while (queue.isNotEmpty) {
+  while (queue.isNotEmpty ) {
     List<String> path = queue.removeFirst();
     String current = path.last;
     
     if (current == end) {
-      return path;
+      allPaths.add(path);
+      continue; // Continue to find more paths
     }
     
     List<String> neighbors = graph[current] ?? [];
-    for (String neighbor in neighbors) {
-      if (!visited.contains(neighbor)) {
-        visited.add(neighbor);
+
+    // Create a copy and remove line identifier safely
+    List<String> actualNeighbors = neighbors.length > 1 ? neighbors.sublist(1) : [];
+
+    for (String neighbor in actualNeighbors) {
+      // Only visit if not already in current path
+      if (!path.contains(neighbor)) {
         List<String> newPath = List.from(path);
         newPath.add(neighbor);
         queue.add(newPath);
       }
     }
   }
-  return []; // Return an empty list if no path is found
+  
+  // Sort paths by length (shortest first)
+  allPaths.sort((a, b) => a.length.compareTo(b.length));
+  
+  return allPaths;
 } 
 
 void main(){
@@ -69,96 +77,96 @@ void main(){
   print('Enter end station:');
   final endStation = stdin.readLineSync()!;
 //define the metro lines
-  final metro_line_1 = <String, List<String>> {"helwan": ["ain helwan"],
-  "ain helwan": ["helwan", "helwan university"],
-  "helwan university": ["ain helwan", "wadi hof"],
-  "wadi hof": ["helwan university", "hadayek helwan"],
-  "hadayek helwan": ["wadi hof", "elmaasara"],
-  "elmaasara": ["hadayek helwan", "tora elasmant"],
-  "tora elasmant": ["elmaasara", "kozzika"],
-  "kozzika": ["tora elasmant", "tora elbalad"],
-  "tora elbalad": ["kozzika", "sakanat elmaadi"],
-  "sakanat elmaadi": ["tora elbalad", "maadi"],
-  "maadi": ["sakanat elmaadi", "hadayek elmaadi"],
-  "hadayek elmaadi": ["maadi", "dar elsalam"],
-  "dar elsalam": ["hadayek elmaadi", "elzahraa"],
-  "elzahraa": ["dar elsalam", "mar girgis"],
-  "mar girgis": ["elzahraa", "elmalek elsaleh"],
-  "elmalek elsaleh": ["mar girgis", "alsayeda zeinab"],
-  "alsayeda zeinab": ["elmalek elsaleh", "saad zaghloul"],
-  "saad zaghloul": ["alsayeda zeinab", "sadat"],
-  "sadat": ["saad zaghloul", "gamal abdel nasser", "mohamed naguib", "opera"],
-  "gamal abdel nasser": ["sadat", "orabi", "attaba", "maspero"],
-  "orabi": ["gamal abdel nasser", "alshohadaa"],
-  "alshohadaa": ["orabi", "ghamra", "masarra", "attaba"],
-  "ghamra": ["alshohadaa", "eldemerdash"],
-  "eldemerdash": ["ghamra", "manshiet elsadr"],
-  "manshiet elsadr": ["eldemerdash", "kobri elqobba"],
-  "kobri elqobba": ["manshiet elsadr", "hammamat elqobba"],
-  "hammamat elqobba": ["kobri elqobba", "saray elqobba"],
-  "saray elqobba": ["hammamat elqobba", "hadayek elzaitoun"],
-  "hadayek elzaitoun": ["saray elqobba", "helmeyet elzaitoun"],
-  "helmeyet elzaitoun": ["hadayek elzaitoun", "elmatareyya"],
-  "elmatareyya": ["helmeyet elzaitoun", "ain shams"],
-  "ain shams": ["elmatareyya", "ezbet elnakhl"],
-  "ezbet elnakhl": ["ain shams", "elmarg"],
-  "elmarg": ["ezbet elnakhl", "new elmarg"],
-  "new elmarg": ["elmarg"]};
+  final metro_line_1 = <String, List<String>> {"helwan": ["line_1", "ain helwan"],
+  "ain helwan": ["line_1", "helwan", "helwan university"],
+  "helwan university": ["line_1", "ain helwan", "wadi hof"],
+  "wadi hof": ["line_1", "helwan university", "hadayek helwan"],
+  "hadayek helwan": ["line_1", "wadi hof", "elmaasara"],
+  "elmaasara": ["line_1", "hadayek helwan", "tora elasmant"],
+  "tora elasmant": ["line_1", "elmaasara", "kozzika"],
+  "kozzika": ["line_1", "tora elasmant", "tora elbalad"],
+  "tora elbalad": ["line_1", "kozzika", "sakanat elmaadi"],
+  "sakanat elmaadi": ["line_1", "tora elbalad", "maadi"],
+  "maadi": ["line_1", "sakanat elmaadi", "hadayek elmaadi"],
+  "hadayek elmaadi": ["line_1", "maadi", "dar elsalam"],
+  "dar elsalam": ["line_1", "hadayek elmaadi", "elzahraa"],
+  "elzahraa": ["line_1", "dar elsalam", "mar girgis"],
+  "mar girgis": ["line_1", "elzahraa", "elmalek elsaleh"],
+  "elmalek elsaleh": ["line_1", "mar girgis", "alsayeda zeinab"],
+  "alsayeda zeinab": ["line_1", "elmalek elsaleh", "saad zaghloul"],
+  "saad zaghloul": ["line_1", "alsayeda zeinab", "sadat"],
+  "sadat": ["line_1", "saad zaghloul", "gamal abdel nasser", "mohamed naguib", "opera"],
+  "gamal abdel nasser": ["line_1", "sadat", "orabi", "attaba", "maspero"],
+  "orabi": ["line_1", "gamal abdel nasser", "alshohadaa"],
+  "alshohadaa": ["line_1", "orabi", "ghamra", "masarra", "attaba"],
+  "ghamra": ["line_1", "alshohadaa", "eldemerdash"],
+  "eldemerdash": ["line_1", "ghamra", "manshiet elsadr"],
+  "manshiet elsadr": ["line_1", "eldemerdash", "kobri elqobba"],
+  "kobri elqobba": ["line_1", "manshiet elsadr", "hammamat elqobba"],
+  "hammamat elqobba": ["line_1", "kobri elqobba", "saray elqobba"],
+  "saray elqobba": ["line_1", "hammamat elqobba", "hadayek elzaitoun"],
+  "hadayek elzaitoun": ["line_1", "saray elqobba", "helmeyet elzaitoun"],
+  "helmeyet elzaitoun": ["line_1", "hadayek elzaitoun", "elmatareyya"],
+  "elmatareyya": ["line_1", "helmeyet elzaitoun", "ain shams"],
+  "ain shams": ["line_1", "elmatareyya", "ezbet elnakhl"],
+  "ezbet elnakhl": ["line_1", "ain shams", "elmarg"],
+  "elmarg": ["line_1", "ezbet elnakhl", "new elmarg"],
+  "new elmarg": ["line_1", "elmarg"]};
 
-  final metro_line_2 = <String, List<String>> {"shubra elkheima": ["kolleyyet elzeraa"],
-  "kolleyyet elzeraa": ["shubra elkheima", "mezallat"],
-  "mezallat": ["kolleyyet elzeraa", "khalafawy"],
-  "khalafawy": ["mezallat", "st. teresa"],
-  "st. teresa": ["khalafawy", "rod elfarag"],
-  "rod elfarag": ["st. teresa", "masarra"],
-  "masarra": ["rod elfarag", "alshohadaa"],
-  "alshohadaa": ["masarra", "orabi", "attaba", "ghamra"],
-  "attaba": ["alshohadaa", "mohamed naguib", "bab elshaariya", "gamal abdel nasser"],
-  "mohamed naguib": ["attaba", "sadat"],
-  "opera": ["sadat", "dokki"],
-  "dokki": ["opera", "el bohoth"],
-  "el bohoth": ["dokki", "cairo university"],
-  "cairo university": ["el bohoth", "faisal", "boulak el dakrour"],
-  "faisal": ["cairo university", "giza"],
-  "giza": ["faisal", "omm elmasryeen"],
-  "omm elmasryeen": ["giza", "sakiat mekky"],
-  "sakiat mekky": ["omm elmasryeen", "elmounib"],
-  "elmounib": ["sakiat mekky"]};
+  final metro_line_2 = <String, List<String>> {"shubra elkheima": ["line_2", "kolleyyet elzeraa"],
+  "kolleyyet elzeraa": ["line_2", "shubra elkheima", "mezallat"],
+  "mezallat": ["line_2", "kolleyyet elzeraa", "khalafawy"],
+  "khalafawy": ["line_2", "mezallat", "st. teresa"],
+  "st. teresa": ["line_2", "khalafawy", "rod elfarag"],
+  "rod elfarag": ["line_2", "st. teresa", "masarra"],
+  "masarra": ["line_2", "rod elfarag", "alshohadaa"],
+  "alshohadaa": ["line_2", "masarra", "orabi", "attaba", "ghamra"],
+  "attaba": ["line_2", "alshohadaa", "mohamed naguib", "bab elshaariya", "gamal abdel nasser"],
+  "mohamed naguib": ["line_2", "attaba", "sadat"],
+  "opera": ["line_2", "sadat", "dokki"],
+  "dokki": ["line_2", "opera", "el bohoth"],
+  "el bohoth": ["line_2", "dokki", "cairo university"],
+  "cairo university": ["line_2", "el bohoth", "faisal", "boulak el dakrour"],
+  "faisal": ["line_2", "cairo university", "giza"],
+  "giza": ["line_2", "faisal", "omm elmasryeen"],
+  "omm elmasryeen": ["line_2", "giza", "sakiat mekky"],
+  "sakiat mekky": ["line_2", "omm elmasryeen", "elmounib"],
+  "elmounib": ["line_2", "sakiat mekky"]};
 
-  final metro_line_3 = <String, List<String>> {"adly mansour": ["elhaykestep"],
-  "elhaykestep": ["adly mansour", "omar ibn elkhattab"],
-  "omar ibn elkhattab": ["elhaykestep", "qubaa"],
-  "qubaa": ["omar ibn elkhattab", "hesham barakat"],
-  "hesham barakat": ["qubaa", "elnozha"],
-  "elnozha": ["hesham barakat", "el shams club"],
-  "el shams club": ["elnozha", "alf masken"],
-  "alf masken": ["el shams club", "heliopolis"],
-  "heliopolis": ["alf masken", "haroun"],
-  "haroun": ["heliopolis", "alahram"],
-  "alahram": ["haroun", "koleyet elbanat"],
-  "koleyet elbanat": ["alahram", "stadium"],
-  "stadium": ["koleyet elbanat", "fair zone"],
-  "fair zone": ["stadium", "abbassiya"],
-  "abbassiya": ["fair zone", "abdou pasha"],
-  "abdou pasha": ["abbassiya", "elgeish"],
-  "elgeish": ["abdou pasha", "bab elshaariya"],
-  "bab elshaariya": ["elgeish", "attaba"],
-  "attaba": ["bab elshaariya", "gamal abdel nasser", "mohamed naguib", "alshohadaa"],
-  "gamal abdel nasser": ["attaba", "sadat", "orabi", "maspero"],
-  "maspero": ["gamal abdel nasser", "safaa hijazy"],
-  "safaa hijazy": ["maspero", "kit kat"],
-  "kit kat": ["safaa hijazy", "sudan"],
-  "sudan": ["kit kat", "imbaba"],
-  "imbaba": ["sudan", "elbohy"],
-  "elbohy": ["imbaba", "elqawmia"],
-  "elqawmia": ["elbohy", "ring road"],
-  "ring road": ["elqawmia", "rod elfarag corridor"],
-  "rod elfarag corridor": ["ring road", "tawfikia"],
-  "tawfikia": ["rod elfarag corridor", "wadi el nile"],
-  "wadi el nile": ["tawfikia", "gamet el dowal"],
-  "gamet el dowal": ["wadi el nile", "boulak el dakrour"],
-  "boulak el dakrour": ["gamet el dowal", "cairo university"],
-  "cairo university": ["boulak el dakrour", "el bohoth", "faisal"]};
+  final metro_line_3 = <String, List<String>> {"adly mansour": ["line_3", "elhaykestep"],
+  "elhaykestep": ["line_3", "adly mansour", "omar ibn elkhattab"],
+  "omar ibn elkhattab": ["line_3", "elhaykestep", "qubaa"],
+  "qubaa": ["line_3", "omar ibn elkhattab", "hesham barakat"],
+  "hesham barakat": ["line_3", "qubaa", "elnozha"],
+  "elnozha": ["line_3", "hesham barakat", "el shams club"],
+  "el shams club": ["line_3", "elnozha", "alf masken"],
+  "alf masken": ["line_3", "el shams club", "heliopolis"],
+  "heliopolis": ["line_3", "alf masken", "haroun"],
+  "haroun": ["line_3", "heliopolis", "alahram"],
+  "alahram": ["line_3", "haroun", "koleyet elbanat"],
+  "koleyet elbanat": ["line_3", "alahram", "stadium"],
+  "stadium": ["line_3", "koleyet elbanat", "fair zone"],
+  "fair zone": ["line_3", "stadium", "abbassiya"],
+  "abbassiya": ["line_3", "fair zone", "abdou pasha"],
+  "abdou pasha": ["line_3", "abbassiya", "elgeish"],
+  "elgeish": ["line_3", "abdou pasha", "bab elshaariya"],
+  "bab elshaariya": ["line_3", "elgeish", "attaba"],
+  "attaba": ["line_3", "bab elshaariya", "gamal abdel nasser", "mohamed naguib", "alshohadaa"],
+  "gamal abdel nasser": ["line_3", "attaba", "sadat", "orabi", "maspero"],
+  "maspero": ["line_3", "gamal abdel nasser", "safaa hijazy"],
+  "safaa hijazy": ["line_3", "maspero", "kit kat"],
+  "kit kat": ["line_3", "safaa hijazy", "sudan"],
+  "sudan": ["line_3", "kit kat", "imbaba"],
+  "imbaba": ["line_3", "sudan", "elbohy"],
+  "elbohy": ["line_3", "imbaba", "elqawmia"],
+  "elqawmia": ["line_3", "elbohy", "ring road"],
+  "ring road": ["line_3", "elqawmia", "rod elfarag corridor"],
+  "rod elfarag corridor": ["line_3", "ring road", "tawfikia"],
+  "tawfikia": ["line_3", "rod elfarag corridor", "wadi el nile"],
+  "wadi el nile": ["line_3", "tawfikia", "gamet el dowal"],
+  "gamet el dowal": ["line_3", "wadi el nile", "boulak el dakrour"],
+  "boulak el dakrour": ["line_3", "gamet el dowal", "cairo university"],
+  "cairo university": ["line_3", "boulak el dakrour", "el bohoth", "faisal"]};
 
 //create a graph that contains all the metro lines
   Map<String, List<String>> graph = {};
@@ -168,10 +176,15 @@ void main(){
   
   final result = bfs(graph, startStation, endStation);
   if (result.isEmpty) {
-    print('No path found between $startStation and $endStation');
+    print("No path found between $startStation and $endStation.");
   } else {
-    print('Shortest path from $startStation to $endStation:');
-    print(result.join(' -> '));
+    print("All possible paths from $startStation to $endStation:");
+    for (var path in result) {
+      print(path.join(" -> "));
     }
+  }
 
 }
+
+//el bohoth
+//abdou pasha
