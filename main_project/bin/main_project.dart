@@ -38,38 +38,88 @@ List<List<String>> bfs(Map<String, List<String>> graph, String start, String end
   Queue<List<String>> queue = Queue<List<String>>();
   List<List<String>> allPaths = [];
 
+  // Start with just the station name
   queue.add([start]);
 
-  while (queue.isNotEmpty ) {
+  while (queue.isNotEmpty) {
     List<String> path = queue.removeFirst();
     String current = path.last;
     
     if (current == end) {
       allPaths.add(path);
-      continue; // Continue to find more paths
+      continue;
     }
     
     List<String> neighbors = graph[current] ?? [];
-
-    // Create a copy and remove line identifier safely
     List<String> actualNeighbors = neighbors.length > 1 ? neighbors.sublist(1) : [];
+    String lineNumber = neighbors.isNotEmpty ? neighbors[0] : "";
 
     for (String neighbor in actualNeighbors) {
-      // Only visit if not already in current path
-      if (!path.contains(neighbor)) {
+      // Check if neighbor station is already in path (check only odd indices for stations)
+      bool alreadyVisited = false;
+      for (int i = 0; i < path.length; i += 2) {
+        if (path[i] == neighbor) {
+          alreadyVisited = true;
+          break;
+        }
+      }
+      
+      if (!alreadyVisited) {
         List<String> newPath = List.from(path);
-        newPath.add(neighbor);
+        newPath.add(lineNumber);  // Add line number
+        newPath.add(neighbor);    // Add station name
         queue.add(newPath);
       }
     }
   }
-  
-  // Sort paths by length (shortest first)
+  //odd --> line number
+  //even --> station name
   allPaths.sort((a, b) => a.length.compareTo(b.length));
-  
   return allPaths;
-} 
+}
 
+// still don't add the transaction stations
+void printPaths(List<List<String>> paths) {
+  if (paths.isEmpty) {
+    print("No path found.");
+    return;
+  }
+  
+  print("All possible paths:");
+  for (int pathIndex = 0; pathIndex < paths.length; pathIndex++) {
+    var path = paths[pathIndex];
+    print("\nPath ${pathIndex + 1}:");
+    
+    if (path.length == 1) {
+      print("You are already at ${path[0]}");
+      continue;
+    }
+    
+    // Start station (no line info)
+    print("Start from: ${path[0]}");
+    
+    String? previousLine; // this variable can be null
+    
+    // Process stations with lines (from index 1 onwards)
+    for (int i = 1; i < path.length; i += 2) {
+      if (i + 1 < path.length) {
+        String currentLine = path[i];     // Line number
+        String currentStation = path[i + 1]; // Station name
+        
+        if (previousLine == null || previousLine != currentLine) {
+          print("Take $currentLine to $currentStation");
+        } else {
+          print("Continue to $currentStation");
+        }
+        
+        previousLine = currentLine;
+      }
+    }
+    
+    print("Arrive at: ${path.last}");
+    print("Total stations: ${(path.length + 1) ~/ 2}");
+  }
+}
 void main(){
 //get inputs
   print('Enter start station:');
@@ -175,16 +225,20 @@ void main(){
   graph.addAll(metro_line_3);
   
   final result = bfs(graph, startStation, endStation);
-  if (result.isEmpty) {
-    print("No path found between $startStation and $endStation.");
-  } else {
-    print("All possible paths from $startStation to $endStation:");
-    for (var path in result) {
-      print(path.join(" -> "));
-    }
-  }
+  printPaths(result);
+  // if (result.isEmpty) {
+  //   print("No path found between $startStation and $endStation.");
+  // } else {
+  //   print("All possible paths from $startStation to $endStation:");
+  //   for (var path in result) {
+  //     print(path.join(" -> "));
+  //   }
+  // }
+
+  // for(var entry in graph.entries) print('${entry.key}: ${entry.value}');
 
 }
 
 //el bohoth
 //abdou pasha
+//mohamed naguib
