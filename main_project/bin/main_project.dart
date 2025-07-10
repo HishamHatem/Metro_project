@@ -226,15 +226,7 @@ void main(){
   
   final result = bfs(graph, startStation, endStation);
   printPaths(result);
-  // if (result.isEmpty) {
-  //   print("No path found between $startStation and $endStation.");
-  // } else {
-  //   print("All possible paths from $startStation to $endStation:");
-  //   for (var path in result) {
-  //     print(path.join(" -> "));
-  //   }
-  // }
-
+  
   // for(var entry in graph.entries) print('${entry.key}: ${entry.value}');
 
 }
