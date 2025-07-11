@@ -38,88 +38,38 @@ List<List<String>> bfs(Map<String, List<String>> graph, String start, String end
   Queue<List<String>> queue = Queue<List<String>>();
   List<List<String>> allPaths = [];
 
-  // Start with just the station name
   queue.add([start]);
 
-  while (queue.isNotEmpty) {
+  while (queue.isNotEmpty ) {
     List<String> path = queue.removeFirst();
     String current = path.last;
     
     if (current == end) {
       allPaths.add(path);
-      continue;
+      continue; // Continue to find more paths
     }
     
     List<String> neighbors = graph[current] ?? [];
+
+    // Create a copy and remove line identifier safely
     List<String> actualNeighbors = neighbors.length > 1 ? neighbors.sublist(1) : [];
-    String lineNumber = neighbors.isNotEmpty ? neighbors[0] : "";
 
     for (String neighbor in actualNeighbors) {
-      // Check if neighbor station is already in path (check only odd indices for stations)
-      bool alreadyVisited = false;
-      for (int i = 0; i < path.length; i += 2) {
-        if (path[i] == neighbor) {
-          alreadyVisited = true;
-          break;
-        }
-      }
-      
-      if (!alreadyVisited) {
+      // Only visit if not already in current path
+      if (!path.contains(neighbor)) {
         List<String> newPath = List.from(path);
-        newPath.add(lineNumber);  // Add line number
-        newPath.add(neighbor);    // Add station name
+        newPath.add(neighbor);
         queue.add(newPath);
       }
     }
   }
-  //odd --> line number
-  //even --> station name
-  allPaths.sort((a, b) => a.length.compareTo(b.length));
-  return allPaths;
-}
-
-// still don't add the transaction stations
-void printPaths(List<List<String>> paths) {
-  if (paths.isEmpty) {
-    print("No path found.");
-    return;
-  }
   
-  print("All possible paths:");
-  for (int pathIndex = 0; pathIndex < paths.length; pathIndex++) {
-    var path = paths[pathIndex];
-    print("\nPath ${pathIndex + 1}:");
-    
-    if (path.length == 1) {
-      print("You are already at ${path[0]}");
-      continue;
-    }
-    
-    // Start station (no line info)
-    print("Start from: ${path[0]}");
-    
-    String? previousLine; // this variable can be null
-    
-    // Process stations with lines (from index 1 onwards)
-    for (int i = 1; i < path.length; i += 2) {
-      if (i + 1 < path.length) {
-        String currentLine = path[i];     // Line number
-        String currentStation = path[i + 1]; // Station name
-        
-        if (previousLine == null || previousLine != currentLine) {
-          print("Take $currentLine to $currentStation");
-        } else {
-          print("Continue to $currentStation");
-        }
-        
-        previousLine = currentLine;
-      }
-    }
-    
-    print("Arrive at: ${path.last}");
-    print("Total stations: ${(path.length + 1) ~/ 2}");
-  }
-}
+  // Sort paths by length (shortest first)
+  allPaths.sort((a, b) => a.length.compareTo(b.length));
+  
+  return allPaths;
+} 
+
 void main(){
 //get inputs
   print('Enter start station:');
@@ -225,12 +175,41 @@ void main(){
   graph.addAll(metro_line_3);
   
   final result = bfs(graph, startStation, endStation);
-  printPaths(result);
-  
-  // for(var entry in graph.entries) print('${entry.key}: ${entry.value}');
+  if (result.isEmpty) {
+    print("No path found between $startStation and $endStation.");
+  } else {
+    print("All possible paths from $startStation to $endStation:");
+    for (var path in result) {
+      final numberOfStations = path.length;
+      final totalMinutes = numberOfStations * 2; //total minutes taken from start station to end station in this path
+      final int hours = totalMinutes ~/ 60;
+      final minutes = totalMinutes % 60;
+      int ticket;
+      if(numberOfStations <= 9){
+        ticket = 8; //first exception that ticket price starts from 8 L.E. then 10 L.E. then adds 5 L.E. every 7 stations
+      } else if (numberOfStations > 23){
+        ticket = 20; //second exception that ticket price is capped at 20 L.E.
+      } else {
+        ticket = 10 + 5*((numberOfStations - 9) ~/ 7); //every 7 stations over 9 stations adds 5 L.E.
+      }
+
+      if(path == result[0]){
+        print("Shortest Path: ");
+      }
+      print(path.join(" -> "));
+      print("number of stations: $numberOfStations stations, and ticket cost = $ticket L.E.");
+      if(hours!=0){
+        print("time taken in this path: $hours hours and $minutes minutes");
+      }
+      else{
+        print("time taken in this path: $totalMinutes minutes");
+      }
+      print("");
+    }
+
+  }
 
 }
 
 //el bohoth
 //abdou pasha
-//mohamed naguib
