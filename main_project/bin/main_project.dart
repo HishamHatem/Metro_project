@@ -265,7 +265,7 @@ void main(){
   String answer = '';
   if(!metro_line_1.containsKey(startStation) && !metro_line_2.containsKey(startStation) && !metro_line_3.containsKey(startStation)){
     print("Wrong station name");
-    if(bestMatch != null){
+    if(bestMatch.bestMatch.target != ""){
       print("Did you mean ${bestMatch.bestMatch.target}? enter 'yes' if you mean this: ");
       answer = stdin.readLineSync()!;
       if (answer == 'yes'){
@@ -282,7 +282,7 @@ void main(){
   bestMatch = endStation.bestMatch(allStations);
   if(!metro_line_1.containsKey(endStation) && !metro_line_2.containsKey(endStation) && !metro_line_3.containsKey(endStation)){
     print("Wrong station name");
-    if(bestMatch != null){
+    if(bestMatch.bestMatch.target != ""){
       print("Did you mean ${bestMatch.bestMatch.target}? enter 'yes' if you mean this: ");
       answer = stdin.readLineSync()!;
       if (answer == 'yes'){
