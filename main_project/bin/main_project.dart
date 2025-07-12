@@ -35,214 +35,354 @@ import 'dart:io';
 import 'dart:collection';
 import 'package:string_similarity/string_similarity.dart';
 
-List<List<String>> bfs(Map<String, List<String>> graph, String start, String end) {
+// List<List<String>> bfs(Map<String, List<String>> graph, String start, String end) {
+//   Queue<List<String>> queue = Queue<List<String>>();
+//   List<List<String>> allPaths = [];
+
+//   // Start with just the station name
+//   queue.add([start]);
+
+//   while (queue.isNotEmpty) {
+//     List<String> path = queue.removeFirst();
+//     String current = path.last;
+
+//     if (current == end) {
+//       allPaths.add(path);
+//       continue;
+//     }
+
+//     List<String> neighbors = graph[current] ?? [];
+//     List<String> actualNeighbors = neighbors.length > 1 ? neighbors.sublist(1) : [];
+//     String lineNumber = neighbors.isNotEmpty ? neighbors[0] : "";
+
+//     for (String neighbor in actualNeighbors) {
+//       // Check if neighbor station is already in path (check only odd indices for stations)
+//       bool alreadyVisited = false;
+//       for (int i = 0; i < path.length; i += 2) {
+//         if (path[i] == neighbor) {
+//           alreadyVisited = true;
+//           break;
+//         }
+//       }
+
+//       if (!alreadyVisited) {
+//         List<String> newPath = List.from(path);
+//         newPath.add(lineNumber);  // Add line number
+//         newPath.add(neighbor);    // Add station name
+//         queue.add(newPath);
+//       }
+//     }
+//   }
+//   //odd --> line number
+//   //even --> station name
+//   allPaths.sort((a, b) => a.length.compareTo(b.length));
+//   return allPaths;
+// }
+
+
+//new function
+List<List<String>> findPaths(String start, String end, Map<String, List<String>> graph) {
   Queue<List<String>> queue = Queue<List<String>>();
   List<List<String>> allPaths = [];
-
-  // Start with just the station name
-  queue.add([start]);
-
+  
+  // Get the starting line for the start station
+  String startLine = graph[start]![0];
+  
+  // Start with the station and its line
+  queue.add([start, startLine]);
+  
   while (queue.isNotEmpty) {
     List<String> path = queue.removeFirst();
-    String current = path.last;
-
-    if (current == end) {
+    String currentStation = path[path.length - 2]; // Last station
+    // String currentLine = path[path.length - 1];    // Current line
+    
+    if (currentStation == end) {
       allPaths.add(path);
       continue;
     }
-
-    List<String> neighbors = graph[current] ?? [];
-    List<String> actualNeighbors = neighbors.length > 1 ? neighbors.sublist(1) : [];
-    String lineNumber = neighbors.isNotEmpty ? neighbors[0] : "";
-
-    for (String neighbor in actualNeighbors) {
-      // Check if neighbor station is already in path (check only odd indices for stations)
-      bool alreadyVisited = false;
-      for (int i = 0; i < path.length; i += 2) {
-        if (path[i] == neighbor) {
-          alreadyVisited = true;
-          break;
+    
+    // Get neighbors for current station
+    List<String> stationData = graph[currentStation] ?? [];
+    if (stationData.isEmpty) continue;
+    
+    // Process neighbors (pairs: station, line, station, line, ...)
+    for (int i = 1; i < stationData.length; i += 2) {
+      if (i + 1 < stationData.length) {
+        String neighborStation = stationData[i];
+        String neighborLine = stationData[i + 1];
+        
+        // Check if neighbor is already visited (avoid loops)
+        bool alreadyVisited = false;
+        for (int j = 0; j < path.length; j += 2) {
+          if (path[j] == neighborStation) {
+            alreadyVisited = true;
+            break;
+          }
         }
-      }
-
-      if (!alreadyVisited) {
-        List<String> newPath = List.from(path);
-        newPath.add(lineNumber);  // Add line number
-        newPath.add(neighbor);    // Add station name
-        queue.add(newPath);
+        
+        if (!alreadyVisited) {
+          List<String> newPath = List.from(path);
+          newPath.add(neighborStation);
+          newPath.add(neighborLine);
+          queue.add(newPath);
+        }
       }
     }
   }
-  //odd --> line number
-  //even --> station name
+  
+  // Sort paths by length (shortest first)
   allPaths.sort((a, b) => a.length.compareTo(b.length));
   return allPaths;
 }
 
-// still don't add the transaction stations
+// // still don't add the transaction stations
+// void printPaths(List<List<String>> paths) {
+//   if (paths.isEmpty) {
+//     print("No path found.");
+//     return;
+//   }
+
+//   print("All possible paths:");
+//   for (int pathIndex = 0; pathIndex < paths.length; pathIndex++) {
+//     var path = paths[pathIndex];
+//     print("\nPath ${pathIndex + 1}:");
+//     if(pathIndex == 0){
+//       print("Shortest Path: ");
+//     }
+
+//     if (path.length == 1) {
+//       print("You are already at ${path[0]}");
+//       continue;
+//     }
+
+//     // Start station (no line info)
+//     print("Start from: ${path[0]}");
+
+//     String? previousLine; // this variable can be null
+
+//     // Process stations with lines (from index 1 onwards)
+//     for (int i = 1; i < path.length; i += 2) {
+//       if (i + 1 < path.length) {
+//         String currentLine = path[i];     // Line number
+//         String currentStation = path[i + 1]; // Station name
+
+//         if (previousLine == null || previousLine != currentLine) {
+//           print("Take $currentLine to $currentStation");
+//         } else {
+//           print("Continue to $currentStation");
+//         }
+
+//         previousLine = currentLine;
+//       }
+//     }
+
+//     final numberOfStations = (path.length + 1) ~/ 2;
+//     final totalMinutes = numberOfStations * 2; //total minutes taken from start station to end station in this path
+//     final int hours = totalMinutes ~/ 60;
+//     final minutes = totalMinutes % 60;
+//     int ticket;
+//     if(numberOfStations <= 9){
+//       ticket = 8; //first exception that ticket price starts from 8 L.E. then 10 L.E. then adds 5 L.E. every 7 stations
+//     } else if (numberOfStations > 23){
+//       ticket = 20; //second exception that ticket price is capped at 20 L.E.
+//     } else {
+//       ticket = 10 + 5*((numberOfStations - 9) ~/ 7); //every 7 stations over 9 stations adds 5 L.E.
+//     }
+
+//     print("Arrive at: ${path.last}");
+//     print("Total stations: $numberOfStations, and ticket cost = $ticket L.E.");
+//     if(hours!=0){
+//       print("time taken in this path: $hours hours and $minutes minutes");
+//     }
+//     else{
+//       print("time taken in this path: $totalMinutes minutes");
+//     }
+//     print("");
+//   }
+// } 
+
+
+//new print function
 void printPaths(List<List<String>> paths) {
   if (paths.isEmpty) {
     print("No path found.");
     return;
   }
 
-  print("All possible paths:");
   for (int pathIndex = 0; pathIndex < paths.length; pathIndex++) {
     var path = paths[pathIndex];
-    print("\nPath ${pathIndex + 1}:");
-    if(pathIndex == 0){
-      print("Shortest Path: ");
+    
+    if (pathIndex == 0) {
+      print("The shortest path is:");
+    } else {
+      print("\nPath ${pathIndex + 1}:");
     }
 
-    if (path.length == 1) {
+    if (path.length <= 2) {
       print("You are already at ${path[0]}");
       continue;
     }
 
-    // Start station (no line info)
-    print("Start from: ${path[0]}");
+    // Start station
+    print("You will start from ${path[0]}");
+    
+    String previousLine = path[1]; // First line
+    int totalMinutes = 0;
+    int stationCount = 1; // Starting station counts
 
-    String? previousLine; // this variable can be null
-
-    // Process stations with lines (from index 1 onwards)
-    for (int i = 1; i < path.length; i += 2) {
+    // Process the path
+    for (int i = 2; i < path.length; i += 2) {
       if (i + 1 < path.length) {
-        String currentLine = path[i];     // Line number
-        String currentStation = path[i + 1]; // Station name
-
-        if (previousLine == null || previousLine != currentLine) {
-          print("Take $currentLine to $currentStation");
+        String currentStation = path[i];
+        String currentLine = path[i + 1];
+        
+        stationCount++;
+        
+        if (previousLine != currentLine) {
+          // Line change - transfer
+          print("Continue to $currentStation You will change from $previousLine to $currentLine");
+          totalMinutes += 5; // Transfer takes 5 minutes
         } else {
-          print("Continue to $currentStation");
+          // Same line
+          print("Continue to $currentStation in the same line ");
+          totalMinutes += 2; // Normal travel takes 2 minutes
         }
-
+        
         previousLine = currentLine;
       }
     }
-
-    final numberOfStations = (path.length + 1) ~/ 2;
-    final totalMinutes = numberOfStations * 2; //total minutes taken from start station to end station in this path
-    final int hours = totalMinutes ~/ 60;
-    final minutes = totalMinutes % 60;
+    
+    print("You arrived to your destination ${path[path.length - 2]}");
+    
+    // Calculate ticket cost
     int ticket;
-    if(numberOfStations <= 9){
-      ticket = 8; //first exception that ticket price starts from 8 L.E. then 10 L.E. then adds 5 L.E. every 7 stations
-    } else if (numberOfStations > 23){
-      ticket = 20; //second exception that ticket price is capped at 20 L.E.
+    if (stationCount <= 9) {
+      ticket = 8;
+    } else if (stationCount > 23) {
+      ticket = 20;
     } else {
-      ticket = 10 + 5*((numberOfStations - 9) ~/ 7); //every 7 stations over 9 stations adds 5 L.E.
+      ticket = 10 + 5 * ((stationCount - 9) ~/ 7);
     }
-
-    print("Arrive at: ${path.last}");
-    print("Total stations: $numberOfStations, and ticket cost = $ticket L.E.");
-    if(hours!=0){
-      print("time taken in this path: $hours hours and $minutes minutes");
+    
+    // Display summary
+    print("\nTotal stations: $stationCount, Ticket cost: $ticket L.E.");
+    
+    if (totalMinutes >= 60) {
+      int hours = totalMinutes ~/ 60;
+      int minutes = totalMinutes % 60;
+      print("Average time: $hours hours and $minutes minutes");
+    } else {
+      print("Average time: $totalMinutes minutes");
     }
-    else{
-      print("time taken in this path: $totalMinutes minutes");
+    
+    if (pathIndex < paths.length - 1) {
+      print("\n" + "="*50);
     }
-    print("");
   }
-} 
+}
+
 
 void main(){
 //define the metro lines
-  final metro_line_1 = <String, List<String>> {
-    "helwan": ["line_1", "ain helwan"],
-    "ain helwan": ["line_1", "helwan", "helwan university"],
-    "helwan university": ["line_1", "ain helwan", "wadi hof"],
-    "wadi hof": ["line_1", "helwan university", "hadayek helwan"],
-    "hadayek helwan": ["line_1", "wadi hof", "elmaasara"],
-    "elmaasara": ["line_1", "hadayek helwan", "tora elasmant"],
-    "tora elasmant": ["line_1", "elmaasara", "kozzika"],
-    "kozzika": ["line_1", "tora elasmant", "tora elbalad"],
-    "tora elbalad": ["line_1", "kozzika", "sakanat elmaadi"],
-    "sakanat elmaadi": ["line_1", "tora elbalad", "maadi"],
-    "maadi": ["line_1", "sakanat elmaadi", "hadayek elmaadi"],
-    "hadayek elmaadi": ["line_1", "maadi", "dar elsalam"],
-    "dar elsalam": ["line_1", "hadayek elmaadi", "elzahraa"],
-    "elzahraa": ["line_1", "dar elsalam", "mar girgis"],
-    "mar girgis": ["line_1", "elzahraa", "elmalek elsaleh"],
-    "elmalek elsaleh": ["line_1", "mar girgis", "alsayeda zeinab"],
-    "alsayeda zeinab": ["line_1", "elmalek elsaleh", "saad zaghloul"],
-    "saad zaghloul": ["line_1", "alsayeda zeinab", "sadat"],
-    "sadat": ["line_1", "saad zaghloul", "gamal abdel nasser", "mohamed naguib", "opera"],
-    "gamal abdel nasser": ["line_1", "sadat", "orabi", "attaba", "maspero"],
-    "orabi": ["line_1", "gamal abdel nasser", "alshohadaa"],
-    "alshohadaa": ["line_1", "orabi", "ghamra", "masarra", "attaba"],
-    "ghamra": ["line_1", "alshohadaa", "eldemerdash"],
-    "eldemerdash": ["line_1", "ghamra", "manshiet elsadr"],
-    "manshiet elsadr": ["line_1", "eldemerdash", "kobri elqobba"],
-    "kobri elqobba": ["line_1", "manshiet elsadr", "hammamat elqobba"],
-    "hammamat elqobba": ["line_1", "kobri elqobba", "saray elqobba"],
-    "saray elqobba": ["line_1", "hammamat elqobba", "hadayek elzaitoun"],
-    "hadayek elzaitoun": ["line_1", "saray elqobba", "helmeyet elzaitoun"],
-    "helmeyet elzaitoun": ["line_1", "hadayek elzaitoun", "elmatareyya"],
-    "elmatareyya": ["line_1", "helmeyet elzaitoun", "ain shams"],
-    "ain shams": ["line_1", "elmatareyya", "ezbet elnakhl"],
-    "ezbet elnakhl": ["line_1", "ain shams", "elmarg"],
-    "elmarg": ["line_1", "ezbet elnakhl", "new elmarg"],
-    "new elmarg": ["line_1", "elmarg"]
-  };
+  final metro_line_1 = <String, List<String>>{
+  "helwan": ["line_1", "ain helwan", "line_1"],
+  "ain helwan": ["line_1", "helwan", "line_1", "helwan university", "line_1"],
+  "helwan university": ["line_1", "ain helwan", "line_1", "wadi hof", "line_1"],
+  "wadi hof": ["line_1", "helwan university", "line_1", "hadayek helwan", "line_1"],
+  "hadayek helwan": ["line_1", "wadi hof", "line_1", "elmaasara", "line_1"],
+  "elmaasara": ["line_1", "hadayek helwan", "line_1", "tora elasmant", "line_1"],
+  "tora elasmant": ["line_1", "elmaasara", "line_1", "kozzika", "line_1"],
+  "kozzika": ["line_1", "tora elasmant", "line_1", "tora elbalad", "line_1"],
+  "tora elbalad": ["line_1", "kozzika", "line_1", "sakanat elmaadi", "line_1"],
+  "sakanat elmaadi": ["line_1", "tora elbalad", "line_1", "maadi", "line_1"],
+  "maadi": ["line_1", "sakanat elmaadi", "line_1", "hadayek elmaadi", "line_1"],
+  "hadayek elmaadi": ["line_1", "maadi", "line_1", "dar elsalam", "line_1"],
+  "dar elsalam": ["line_1", "hadayek elmaadi", "line_1", "elzahraa", "line_1"],
+  "elzahraa": ["line_1", "dar elsalam", "line_1", "mar girgis", "line_1"],
+  "mar girgis": ["line_1", "elzahraa", "line_1", "elmalek elsaleh", "line_1"],
+  "elmalek elsaleh": ["line_1", "mar girgis", "line_1", "alsayeda zeinab", "line_1"],
+  "alsayeda zeinab": ["line_1", "elmalek elsaleh", "line_1", "saad zaghloul", "line_1"],
+  "saad zaghloul": ["line_1", "alsayeda zeinab", "line_1", "sadat", "line_1"],
+  "sadat": ["line_1", "saad zaghloul", "line_1", "gamal abdel nasser", "line_1", "mohamed naguib", "line_2", "opera", "line_2"],
+  "gamal abdel nasser": ["line_1", "sadat", "line_1", "orabi", "line_1", "attaba", "line_3", "maspero", "line_3"],
+  "orabi": ["line_1", "gamal abdel nasser", "line_1", "alshohadaa", "line_1"],
+  "alshohadaa": ["line_1", "orabi", "line_1", "ghamra", "line_1", "masarra", "line_2", "attaba", "line_2"],
+  "ghamra": ["line_1", "alshohadaa", "line_1", "eldemerdash", "line_1"],
+  "eldemerdash": ["line_1", "ghamra", "line_1", "manshiet elsadr", "line_1"],
+  "manshiet elsadr": ["line_1", "eldemerdash", "line_1", "kobri elqobba", "line_1"],
+  "kobri elqobba": ["line_1", "manshiet elsadr", "line_1", "hammamat elqobba", "line_1"],
+  "hammamat elqobba": ["line_1", "kobri elqobba", "line_1", "saray elqobba", "line_1"],
+  "saray elqobba": ["line_1", "hammamat elqobba", "line_1", "hadayek elzaitoun", "line_1"],
+  "hadayek elzaitoun": ["line_1", "saray elqobba", "line_1", "helmeyet elzaitoun", "line_1"],
+  "helmeyet elzaitoun": ["line_1", "hadayek elzaitoun", "line_1", "elmatareyya", "line_1"],
+  "elmatareyya": ["line_1", "helmeyet elzaitoun", "line_1", "ain shams", "line_1"],
+  "ain shams": ["line_1", "elmatareyya", "line_1", "ezbet elnakhl", "line_1"],
+  "ezbet elnakhl": ["line_1", "ain shams", "line_1", "elmarg", "line_1"],
+  "elmarg": ["line_1", "ezbet elnakhl", "line_1", "new elmarg", "line_1"],
+  "new elmarg": ["line_1", "elmarg", "line_1"],
+};
 
-  final metro_line_2 = <String, List<String>> {
-    "shubra elkheima": ["line_2", "kolleyyet elzeraa"],
-    "kolleyyet elzeraa": ["line_2", "shubra elkheima", "mezallat"],
-    "mezallat": ["line_2", "kolleyyet elzeraa", "khalafawy"],
-    "khalafawy": ["line_2", "mezallat", "st. teresa"],
-    "st. teresa": ["line_2", "khalafawy", "rod elfarag"],
-    "rod elfarag": ["line_2", "st. teresa", "masarra"],
-    "masarra": ["line_2", "rod elfarag", "alshohadaa"],
-    "alshohadaa": ["line_2", "masarra", "orabi", "attaba", "ghamra"],
-    "attaba": ["line_2", "alshohadaa", "mohamed naguib", "bab elshaariya", "gamal abdel nasser"],
-    "mohamed naguib": ["line_2", "attaba", "sadat"],
-    "opera": ["line_2", "sadat", "dokki"],
-    "dokki": ["line_2", "opera", "el bohoth"],
-    "el bohoth": ["line_2", "dokki", "cairo university"],
-    "cairo university": ["line_2", "el bohoth", "faisal", "boulak el dakrour"],
-    "faisal": ["line_2", "cairo university", "giza"],
-    "giza": ["line_2", "faisal", "omm elmasryeen"],
-    "omm elmasryeen": ["line_2", "giza", "sakiat mekky"],
-    "sakiat mekky": ["line_2", "omm elmasryeen", "elmounib"],
-    "elmounib": ["line_2", "sakiat mekky"]
-  };
+  final metro_line_2 = <String, List<String>>{
+  "shubra elkheima": ["line_2", "kolleyyet elzeraa", "line_2"],
+  "kolleyyet elzeraa": ["line_2", "shubra elkheima", "line_2", "mezallat", "line_2"],
+  "mezallat": ["line_2", "kolleyyet elzeraa", "line_2", "khalafawy", "line_2"],
+  "khalafawy": ["line_2", "mezallat", "line_2", "st. teresa", "line_2"],
+  "st. teresa": ["line_2", "khalafawy", "line_2", "rod elfarag", "line_2"],
+  "rod elfarag": ["line_2", "st. teresa", "line_2", "masarra", "line_2"],
+  "masarra": ["line_2", "rod elfarag", "line_2", "alshohadaa", "line_2"],
+  "alshohadaa": ["line_2", "masarra", "line_2", "orabi", "line_1", "attaba", "line_2", "ghamra", "line_1"],
+  "attaba": ["line_2", "alshohadaa", "line_2", "mohamed naguib", "line_2", "bab elshaariya", "line_3", "gamal abdel nasser", "line_3"],
+  "mohamed naguib": ["line_2", "attaba", "line_2", "sadat", "line_2"],
+  "opera": ["line_2", "sadat", "line_2", "dokki", "line_2"],
+  "dokki": ["line_2", "opera", "line_2", "el bohoth", "line_2"],
+  "el bohoth": ["line_2", "dokki", "line_2", "cairo university", "line_2"],
+  "cairo university": ["line_2", "el bohoth", "line_2", "faisal", "line_2", "boulak el dakrour", "line_3"],
+  "faisal": ["line_2", "cairo university", "line_2", "giza", "line_2"],
+  "giza": ["line_2", "faisal", "line_2", "omm elmasryeen", "line_2"],
+  "omm elmasryeen": ["line_2", "giza", "line_2", "sakiat mekky", "line_2"],
+  "sakiat mekky": ["line_2", "omm elmasryeen", "line_2", "elmounib", "line_2"],
+  "elmounib": ["line_2", "sakiat mekky", "line_2"],
+};
 
-  final metro_line_3 = <String, List<String>> {
-    "adly mansour": ["line_3", "elhaykestep"],
-    "elhaykestep": ["line_3", "adly mansour", "omar ibn elkhattab"],
-    "omar ibn elkhattab": ["line_3", "elhaykestep", "qubaa"],
-    "qubaa": ["line_3", "omar ibn elkhattab", "hesham barakat"],
-    "hesham barakat": ["line_3", "qubaa", "elnozha"],
-    "elnozha": ["line_3", "hesham barakat", "el shams club"],
-    "el shams club": ["line_3", "elnozha", "alf masken"],
-    "alf masken": ["line_3", "el shams club", "heliopolis"],
-    "heliopolis": ["line_3", "alf masken", "haroun"],
-    "haroun": ["line_3", "heliopolis", "alahram"],
-    "alahram": ["line_3", "haroun", "koleyet elbanat"],
-    "koleyet elbanat": ["line_3", "alahram", "stadium"],
-    "stadium": ["line_3", "koleyet elbanat", "fair zone"],
-    "fair zone": ["line_3", "stadium", "abbassiya"],
-    "abbassiya": ["line_3", "fair zone", "abdou pasha"],
-    "abdou pasha": ["line_3", "abbassiya", "elgeish"],
-    "elgeish": ["line_3", "abdou pasha", "bab elshaariya"],
-    "bab elshaariya": ["line_3", "elgeish", "attaba"],
-    "attaba": ["line_3", "bab elshaariya", "gamal abdel nasser", "mohamed naguib", "alshohadaa"],
-    "gamal abdel nasser": ["line_3", "attaba", "sadat", "orabi", "maspero"],
-    "maspero": ["line_3", "gamal abdel nasser", "safaa hijazy"],
-    "safaa hijazy": ["line_3", "maspero", "kit kat"],
-    "kit kat": ["line_3", "safaa hijazy", "sudan"],
-    "sudan": ["line_3", "kit kat", "imbaba"],
-    "imbaba": ["line_3", "sudan", "elbohy"],
-    "elbohy": ["line_3", "imbaba", "elqawmia"],
-    "elqawmia": ["line_3", "elbohy", "ring road"],
-    "ring road": ["line_3", "elqawmia", "rod elfarag corridor"],
-    "rod elfarag corridor": ["line_3", "ring road", "tawfikia"],
-    "tawfikia": ["line_3", "rod elfarag corridor", "wadi el nile"],
-    "wadi el nile": ["line_3", "tawfikia", "gamet el dowal"],
-    "gamet el dowal": ["line_3", "wadi el nile", "boulak el dakrour"],
-    "boulak el dakrour": ["line_3", "gamet el dowal", "cairo university"],
-    "cairo university": ["line_3", "boulak el dakrour", "el bohoth", "faisal"]
-  };
+  final metro_line_3 = <String, List<String>>{
+  "adly mansour": ["line_3", "elhaykestep", "line_3"],
+  "elhaykestep": ["line_3", "adly mansour", "line_3", "omar ibn elkhattab", "line_3"],
+  "omar ibn elkhattab": ["line_3", "elhaykestep", "line_3", "qubaa", "line_3"],
+  "qubaa": ["line_3", "omar ibn elkhattab", "line_3", "hesham barakat", "line_3"],
+  "hesham barakat": ["line_3", "qubaa", "line_3", "elnozha", "line_3"],
+  "elnozha": ["line_3", "hesham barakat", "line_3", "el shams club", "line_3"],
+  "el shams club": ["line_3", "elnozha", "line_3", "alf masken", "line_3"],
+  "alf masken": ["line_3", "el shams club", "line_3", "heliopolis", "line_3"],
+  "heliopolis": ["line_3", "alf masken", "line_3", "haroun", "line_3"],
+  "haroun": ["line_3", "heliopolis", "line_3", "alahram", "line_3"],
+  "alahram": ["line_3", "haroun", "line_3", "koleyet elbanat", "line_3"],
+  "koleyet elbanat": ["line_3", "alahram", "line_3", "stadium", "line_3"],
+  "stadium": ["line_3", "koleyet elbanat", "line_3", "fair zone", "line_3"],
+  "fair zone": ["line_3", "stadium", "line_3", "abbassiya", "line_3"],
+  "abbassiya": ["line_3", "fair zone", "line_3", "abdou pasha", "line_3"],
+  "abdou pasha": ["line_3", "abbassiya", "line_3", "elgeish", "line_3"],
+  "elgeish": ["line_3", "abdou pasha", "line_3", "bab elshaariya", "line_3"],
+  "bab elshaariya": ["line_3", "elgeish", "line_3", "attaba", "line_3"],
+  "attaba": ["line_3", "bab elshaariya", "line_3", "gamal abdel nasser", "line_3", "mohamed naguib", "line_2", "alshohadaa", "line_1"],
+  "gamal abdel nasser": ["line_3", "attaba", "line_3", "sadat", "line_1", "orabi", "line_1", "maspero", "line_3"],
+  "maspero": ["line_3", "gamal abdel nasser", "line_3", "safaa hijazy", "line_3"],
+  "safaa hijazy": ["line_3", "maspero", "line_3", "kit kat", "line_3"],
+  "kit kat": ["line_3", "safaa hijazy", "line_3", "sudan", "line_3"],
+  "sudan": ["line_3", "kit kat", "line_3", "imbaba", "line_3"],
+  "imbaba": ["line_3", "sudan", "line_3", "elbohy", "line_3"],
+  "elbohy": ["line_3", "imbaba", "line_3", "elqawmia", "line_3"],
+  "elqawmia": ["line_3", "elbohy", "line_3", "ring road", "line_3"],
+  "ring road": ["line_3", "elqawmia", "line_3", "rod elfarag corridor", "line_3"],
+  "rod elfarag corridor": ["line_3", "ring road", "line_3", "tawfikia", "line_3"],
+  "tawfikia": ["line_3", "rod elfarag corridor", "line_3", "wadi el nile", "line_3"],
+  "wadi el nile": ["line_3", "tawfikia", "line_3", "gamet el dowal", "line_3"],
+  "gamet el dowal": ["line_3", "wadi el nile", "line_3", "boulak el dakrour", "line_3"],
+  "boulak el dakrour": ["line_3", "gamet el dowal", "line_3", "cairo university", "line_3"],
+};
+  final graph = <String,List<String>>{};
+  graph.addAll(metro_line_1);
+  graph.addAll(metro_line_2);
+  graph.addAll(metro_line_3);
 // list of all stations
   final allStations = [
     "helwan",
@@ -330,6 +470,13 @@ void main(){
     "gamet el dowal",
     "boulak el dakrour"
   ];
+  // final trans = <String, List<String>> {
+  //   "cairo university": [ "boulak el dakrour", "line_3", "el bohoth","line_2", "faisal", "line_2"],
+  //   "attaba": [ "bab elshaariya","line_3", "gamal abdel nasser","line_3", "mohamed naguib","line_2", "alshohadaa", "line_2"],
+  //   "gamal abdel nasser": ["attaba","line_3", "sadat","line_3", "orabi","line_1", "maspero","line_1"],
+  //   "alshohadaa": [ "masarra","line_2", "attaba", "line_2", "orabi","line_1", "ghamra", "line_1"],
+  //   "sadat": [ "saad zaghloul","line_1", "gamal abdel nasser","line_1", "mohamed naguib","line_2", "opera","line_2"]    
+  // };
 
 
   //get inputs
@@ -375,11 +522,23 @@ void main(){
   }
 
 //create a graph that contains all the metro lines
-  Map<String, List<String>> graph = {};
-  graph.addAll(metro_line_1);
-  graph.addAll(metro_line_2);
-  graph.addAll(metro_line_3);
+  // Map<String, List<String>> graph = {};
+  // graph.addAll(metro_line_1);
+  // graph.addAll(metro_line_2);
+  // graph.addAll(metro_line_3);
   
-  final result = bfs(graph, startStation, endStation);
+//   final result = bfs(graph, startStation, endStation);
+//   printPaths(result);
+  final result = findPaths(startStation, endStation,graph);
+  //print all paths
+  // if (result.isEmpty) {
+  //   print("No path found between $startStation and $endStation.");
+  // } else {
+  //   print("All possible paths from $startStation to $endStation:");
+  //   for (var path in result) {
+  //     print(path.join(" -> "));
+  //     print('');
+  //   }
+  // }
   printPaths(result);
 }
