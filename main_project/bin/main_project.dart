@@ -35,52 +35,6 @@ import 'dart:io';
 import 'dart:collection';
 import 'package:string_similarity/string_similarity.dart';
 
-// List<List<String>> bfs(Map<String, List<String>> graph, String start, String end) {
-//   Queue<List<String>> queue = Queue<List<String>>();
-//   List<List<String>> allPaths = [];
-
-//   // Start with just the station name
-//   queue.add([start]);
-
-//   while (queue.isNotEmpty) {
-//     List<String> path = queue.removeFirst();
-//     String current = path.last;
-
-//     if (current == end) {
-//       allPaths.add(path);
-//       continue;
-//     }
-
-//     List<String> neighbors = graph[current] ?? [];
-//     List<String> actualNeighbors = neighbors.length > 1 ? neighbors.sublist(1) : [];
-//     String lineNumber = neighbors.isNotEmpty ? neighbors[0] : "";
-
-//     for (String neighbor in actualNeighbors) {
-//       // Check if neighbor station is already in path (check only odd indices for stations)
-//       bool alreadyVisited = false;
-//       for (int i = 0; i < path.length; i += 2) {
-//         if (path[i] == neighbor) {
-//           alreadyVisited = true;
-//           break;
-//         }
-//       }
-
-//       if (!alreadyVisited) {
-//         List<String> newPath = List.from(path);
-//         newPath.add(lineNumber);  // Add line number
-//         newPath.add(neighbor);    // Add station name
-//         queue.add(newPath);
-//       }
-//     }
-//   }
-//   //odd --> line number
-//   //even --> station name
-//   allPaths.sort((a, b) => a.length.compareTo(b.length));
-//   return allPaths;
-// }
-
-
-//new function
 List<List<String>> findPaths(String start, String end, Map<String, List<String>> graph) {
   Queue<List<String>> queue = Queue<List<String>>();
   List<List<String>> allPaths = [];
@@ -135,73 +89,6 @@ List<List<String>> findPaths(String start, String end, Map<String, List<String>>
   return allPaths;
 }
 
-// // still don't add the transaction stations
-// void printPaths(List<List<String>> paths) {
-//   if (paths.isEmpty) {
-//     print("No path found.");
-//     return;
-//   }
-
-//   print("All possible paths:");
-//   for (int pathIndex = 0; pathIndex < paths.length; pathIndex++) {
-//     var path = paths[pathIndex];
-//     print("\nPath ${pathIndex + 1}:");
-//     if(pathIndex == 0){
-//       print("Shortest Path: ");
-//     }
-
-//     if (path.length == 1) {
-//       print("You are already at ${path[0]}");
-//       continue;
-//     }
-
-//     // Start station (no line info)
-//     print("Start from: ${path[0]}");
-
-//     String? previousLine; // this variable can be null
-
-//     // Process stations with lines (from index 1 onwards)
-//     for (int i = 1; i < path.length; i += 2) {
-//       if (i + 1 < path.length) {
-//         String currentLine = path[i];     // Line number
-//         String currentStation = path[i + 1]; // Station name
-
-//         if (previousLine == null || previousLine != currentLine) {
-//           print("Take $currentLine to $currentStation");
-//         } else {
-//           print("Continue to $currentStation");
-//         }
-
-//         previousLine = currentLine;
-//       }
-//     }
-
-//     final numberOfStations = (path.length + 1) ~/ 2;
-//     final totalMinutes = numberOfStations * 2; //total minutes taken from start station to end station in this path
-//     final int hours = totalMinutes ~/ 60;
-//     final minutes = totalMinutes % 60;
-//     int ticket;
-//     if(numberOfStations <= 9){
-//       ticket = 8; //first exception that ticket price starts from 8 L.E. then 10 L.E. then adds 5 L.E. every 7 stations
-//     } else if (numberOfStations > 23){
-//       ticket = 20; //second exception that ticket price is capped at 20 L.E.
-//     } else {
-//       ticket = 10 + 5*((numberOfStations - 9) ~/ 7); //every 7 stations over 9 stations adds 5 L.E.
-//     }
-
-//     print("Arrive at: ${path.last}");
-//     print("Total stations: $numberOfStations, and ticket cost = $ticket L.E.");
-//     if(hours!=0){
-//       print("time taken in this path: $hours hours and $minutes minutes");
-//     }
-//     else{
-//       print("time taken in this path: $totalMinutes minutes");
-//     }
-//     print("");
-//   }
-// } 
-
-
 //new print function
 void printPaths(List<List<String>> paths) {
   if (paths.isEmpty) {
@@ -224,7 +111,7 @@ void printPaths(List<List<String>> paths) {
     }
 
     // Start station
-    print("You will start from ${path[0]}");
+    print("You will start from ${path[0]} in ${path[1]}");
     
     String previousLine = path[1]; // First line
     int totalMinutes = 0;
@@ -363,18 +250,18 @@ void main(){
   "abdou pasha": ["line_3", "abbassiya", "line_3", "elgeish", "line_3"],
   "elgeish": ["line_3", "abdou pasha", "line_3", "bab elshaariya", "line_3"],
   "bab elshaariya": ["line_3", "elgeish", "line_3", "attaba", "line_3"],
-  "attaba": ["line_3", "bab elshaariya", "line_3", "gamal abdel nasser", "line_3", "mohamed naguib", "line_2", "alshohadaa", "line_1"],
+  "attaba": ["line_3", "bab elshaariya", "line_3", "gamal abdel nasser", "line_3", "mohamed naguib", "line_2", "alshohadaa", "line_2"],
   "gamal abdel nasser": ["line_3", "attaba", "line_3", "sadat", "line_1", "orabi", "line_1", "maspero", "line_3"],
   "maspero": ["line_3", "gamal abdel nasser", "line_3", "safaa hijazy", "line_3"],
   "safaa hijazy": ["line_3", "maspero", "line_3", "kit kat", "line_3"],
-  "kit kat": ["line_3", "safaa hijazy", "line_3", "sudan", "line_3"],
+  "kit kat": ["line_3", "safaa hijazy", "line_3", "sudan", "line_3", "tawfikia", "line_3"],
   "sudan": ["line_3", "kit kat", "line_3", "imbaba", "line_3"],
   "imbaba": ["line_3", "sudan", "line_3", "elbohy", "line_3"],
   "elbohy": ["line_3", "imbaba", "line_3", "elqawmia", "line_3"],
   "elqawmia": ["line_3", "elbohy", "line_3", "ring road", "line_3"],
   "ring road": ["line_3", "elqawmia", "line_3", "rod elfarag corridor", "line_3"],
-  "rod elfarag corridor": ["line_3", "ring road", "line_3", "tawfikia", "line_3"],
-  "tawfikia": ["line_3", "rod elfarag corridor", "line_3", "wadi el nile", "line_3"],
+  "rod elfarag corridor": ["line_3", "ring road", "line_3"],
+  "tawfikia": ["line_3", "kit kat", "line_3", "wadi el nile", "line_3"],
   "wadi el nile": ["line_3", "tawfikia", "line_3", "gamet el dowal", "line_3"],
   "gamet el dowal": ["line_3", "wadi el nile", "line_3", "boulak el dakrour", "line_3"],
   "boulak el dakrour": ["line_3", "gamet el dowal", "line_3", "cairo university", "line_3"],
@@ -470,14 +357,6 @@ void main(){
     "gamet el dowal",
     "boulak el dakrour"
   ];
-  // final trans = <String, List<String>> {
-  //   "cairo university": [ "boulak el dakrour", "line_3", "el bohoth","line_2", "faisal", "line_2"],
-  //   "attaba": [ "bab elshaariya","line_3", "gamal abdel nasser","line_3", "mohamed naguib","line_2", "alshohadaa", "line_2"],
-  //   "gamal abdel nasser": ["attaba","line_3", "sadat","line_3", "orabi","line_1", "maspero","line_1"],
-  //   "alshohadaa": [ "masarra","line_2", "attaba", "line_2", "orabi","line_1", "ghamra", "line_1"],
-  //   "sadat": [ "saad zaghloul","line_1", "gamal abdel nasser","line_1", "mohamed naguib","line_2", "opera","line_2"]    
-  // };
-
 
   //get inputs
   print('Enter start station:');
@@ -520,25 +399,6 @@ void main(){
       return ;
     }
   }
-
-//create a graph that contains all the metro lines
-  // Map<String, List<String>> graph = {};
-  // graph.addAll(metro_line_1);
-  // graph.addAll(metro_line_2);
-  // graph.addAll(metro_line_3);
-  
-//   final result = bfs(graph, startStation, endStation);
-//   printPaths(result);
   final result = findPaths(startStation, endStation,graph);
-  //print all paths
-  // if (result.isEmpty) {
-  //   print("No path found between $startStation and $endStation.");
-  // } else {
-  //   print("All possible paths from $startStation to $endStation:");
-  //   for (var path in result) {
-  //     print(path.join(" -> "));
-  //     print('');
-  //   }
-  // }
   printPaths(result);
 }
