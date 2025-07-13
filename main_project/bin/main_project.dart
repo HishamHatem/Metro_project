@@ -99,15 +99,10 @@ void printPaths(List<List<String>> paths) {
   for (int pathIndex = 0; pathIndex < paths.length; pathIndex++) {
     var path = paths[pathIndex];
     
-    if (pathIndex == 0) {
-      print("The shortest path is:");
-    } else {
+    if (pathIndex != 0) {
       print("\nPath ${pathIndex + 1}:");
-    }
-
-    if (path.length <= 2) {
-      print("You are already at ${path[0]}");
-      continue;
+    } else {
+      print("The shortest path is:");
     }
 
     // Start station
@@ -398,6 +393,10 @@ void main(){
       print("No similar station found");
       return ;
     }
+  }
+  if (startStation == endStation) {
+    print("You are already at $startStation");
+    return;
   }
   final result = findPaths(startStation, endStation,graph);
   printPaths(result);
