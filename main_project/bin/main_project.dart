@@ -95,14 +95,15 @@ void printPaths(List<List<String>> paths) {
     print("No path found.");
     return;
   }
-
+  int shortest_lines = 100;
+  int shortest_path_index = 0;
   for (int pathIndex = 0; pathIndex < paths.length; pathIndex++) {
     var path = paths[pathIndex];
     
     if (pathIndex != 0) {
       print("\nPath ${pathIndex + 1}:");
     } else {
-      print("The shortest path is:");
+      print("The shortest path according to number of stations is:");
     }
 
     // Start station
@@ -111,6 +112,7 @@ void printPaths(List<List<String>> paths) {
     String previousLine = path[1]; // First line
     int totalMinutes = 0;
     int stationCount = 1; // Starting station counts
+    int linesCount = 1; // Starting line counts
 
     // Process the path
     for (int i = 2; i < path.length; i += 2) {
@@ -124,6 +126,7 @@ void printPaths(List<List<String>> paths) {
           // Line change - transfer
           print("Continue to $currentStation You will change from $previousLine to $currentLine");
           totalMinutes += 5; // Transfer takes 5 minutes
+          linesCount++;
         } else {
           // Same line
           print("Continue to $currentStation in the same line ");
@@ -156,11 +159,17 @@ void printPaths(List<List<String>> paths) {
     } else {
       print("Average time: $totalMinutes minutes");
     }
+
+    if(linesCount < shortest_lines) {
+      shortest_lines = linesCount;
+      shortest_path_index = pathIndex;
+    }
     
     if (pathIndex < paths.length - 1) {
       print("\n" + "="*50);
     }
   }
+  print("\nThe shortest path according to number of lines is Path ${shortest_path_index + 1}, and has ${shortest_lines - 1} transitions.");
 }
 
 
@@ -205,25 +214,26 @@ void main(){
 };
 
   final metro_line_2 = <String, List<String>>{
-  "shubra elkheima": ["line_2", "kolleyyet elzeraa", "line_2"],
-  "kolleyyet elzeraa": ["line_2", "shubra elkheima", "line_2", "mezallat", "line_2"],
-  "mezallat": ["line_2", "kolleyyet elzeraa", "line_2", "khalafawy", "line_2"],
-  "khalafawy": ["line_2", "mezallat", "line_2", "st. teresa", "line_2"],
-  "st. teresa": ["line_2", "khalafawy", "line_2", "rod elfarag", "line_2"],
-  "rod elfarag": ["line_2", "st. teresa", "line_2", "masarra", "line_2"],
-  "masarra": ["line_2", "rod elfarag", "line_2", "alshohadaa", "line_2"],
-  "alshohadaa": ["line_2", "masarra", "line_2", "orabi", "line_1", "attaba", "line_2", "ghamra", "line_1"],
-  "attaba": ["line_2", "alshohadaa", "line_2", "mohamed naguib", "line_2", "bab elshaariya", "line_3", "gamal abdel nasser", "line_3"],
-  "mohamed naguib": ["line_2", "attaba", "line_2", "sadat", "line_2"],
-  "opera": ["line_2", "sadat", "line_2", "dokki", "line_2"],
-  "dokki": ["line_2", "opera", "line_2", "el bohoth", "line_2"],
-  "el bohoth": ["line_2", "dokki", "line_2", "cairo university", "line_2"],
-  "cairo university": ["line_2", "el bohoth", "line_2", "faisal", "line_2", "boulak el dakrour", "line_3"],
-  "faisal": ["line_2", "cairo university", "line_2", "giza", "line_2"],
-  "giza": ["line_2", "faisal", "line_2", "omm elmasryeen", "line_2"],
-  "omm elmasryeen": ["line_2", "giza", "line_2", "sakiat mekky", "line_2"],
-  "sakiat mekky": ["line_2", "omm elmasryeen", "line_2", "elmounib", "line_2"],
-  "elmounib": ["line_2", "sakiat mekky", "line_2"],
+    "shubra elkheima": ["line_2", "kolleyyet elzeraa", "line_2"],
+    "kolleyyet elzeraa": ["line_2", "shubra elkheima", "line_2", "mezallat", "line_2"],
+    "mezallat": ["line_2", "kolleyyet elzeraa", "line_2", "khalafawy", "line_2"],
+    "khalafawy": ["line_2", "mezallat", "line_2", "st. teresa", "line_2"],
+    "st. teresa": ["line_2", "khalafawy", "line_2", "rod elfarag", "line_2"],
+    "rod elfarag": ["line_2", "st. teresa", "line_2", "masarra", "line_2"],
+    "masarra": ["line_2", "rod elfarag", "line_2", "alshohadaa", "line_2"],
+    "alshohadaa": ["line_2", "masarra", "line_2", "orabi", "line_1", "attaba", "line_2", "ghamra", "line_1"],
+    "attaba": ["line_2", "alshohadaa", "line_2", "mohamed naguib", "line_2", "bab elshaariya", "line_3", "gamal abdel nasser", "line_3"],
+    "mohamed naguib": ["line_2", "attaba", "line_2", "sadat", "line_2"],
+    "sadat": ["line_2", "mohamed naguib", "line_2", "opera", "line_2", "gamal abdel nasser", "line_1", "saad zaghloul", "line_1"],
+    "opera": ["line_2", "sadat", "line_2", "dokki", "line_2"],
+    "dokki": ["line_2", "opera", "line_2", "el bohoth", "line_2"],
+    "el bohoth": ["line_2", "dokki", "line_2", "cairo university", "line_2"],
+    "cairo university": ["line_2", "el bohoth", "line_2", "faisal", "line_2", "boulak el dakrour", "line_3"],
+    "faisal": ["line_2", "cairo university", "line_2", "giza", "line_2"],
+    "giza": ["line_2", "faisal", "line_2", "omm elmasryeen", "line_2"],
+    "omm elmasryeen": ["line_2", "giza", "line_2", "sakiat mekky", "line_2"],
+    "sakiat mekky": ["line_2", "omm elmasryeen", "line_2", "elmounib", "line_2"],
+    "elmounib": ["line_2", "sakiat mekky", "line_2"],
 };
 
   final metro_line_3 = <String, List<String>>{
